@@ -2,11 +2,11 @@
 
 LogiaChem is a molecule drawing and visualization platform. It is composed of a web app which serves as a molecule editor, and of an Android app which allows the user to observe the molecule in VR.
 
-The editor, available at 
+The editor, available at https://jlvoiseux.github.io/LogiaChem/
 ![
 ](logiachem_editor.png)
 
-The android app, available at
+The android app, available at https://github.com/jlvoiseux/LogiaChem/releases
 ![
 ](logiachem_app.png)
 
