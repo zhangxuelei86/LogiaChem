@@ -10,6 +10,8 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>Logia Chemistry Editor</title>
 
+
+
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-auth.js"></script>
     <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
@@ -18,6 +20,12 @@
     <script type="text/javascript" language="javascript" src="jsme/jsme.nocache.js"></script>
     <script type="text/javascript" src="jsmol/JSmol.min.js"></script>
     <script type="text/javascript" src="jsmol/js/JSmolJME.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous"></link>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
 
     <script>
         // Initialize Firebase
@@ -34,13 +42,47 @@
     <script>
         var userid;
         var db = firebase.database();
+        var MESSAGE_TEMPLATE = '<div class="mol-btn"><button type="button" class="btn btn-primary mol-name" style="width:60%;margin:4px;"></button> <button type="button" class="btn btn-danger" onclick="removeMol(this)" style="width:15%;margin:4px;">X</button></div>';
+        var moleculeListElement;
+
+        function displayMol(key, name) {
+            var container = document.createElement('div');
+            container.innerHTML = MESSAGE_TEMPLATE;
+            div = container.firstChild;
+            moleculeListElement.appendChild(div);
+            div.querySelector('.btn.btn-primary.mol-name').textContent = name;
+            div.setAttribute('id', key);
+        }
+
+        function removeMol(elem){
+            var toRemove = elem.parentNode.id;
+            firebase.database().ref('users/' + userid + '/atoms/'+ toRemove).remove();
+        }
+
         firebase.auth().onAuthStateChanged(function (user) {
             if (user) {
-                userid = user.uid
+                userid = user.uid;
+                moleculeListElement = document.getElementById('moleculeList');
+                var molList = firebase.database().ref('users/' + userid + '/atoms/');
+                molList.on('value', function (snapshot) {
+                    var tab = document.getElementsByClassName("mol-btn");
+                    if (tab.length != 0) {
+                        while (tab[0]) {
+                            tab[0].parentNode.removeChild(tab[0]);
+                        }
+                    }
+                    snapshot.forEach(function (childSnapshot) {
+                        displayMol(childSnapshot.key, childSnapshot.child("name").val());
+                    });
+                    console.log(document.getElementsByClassName("mol-btn").length);
+
+                });
             } else {
                 window.location = 'index.html'; //If User is not logged in, redirect to login page
             }
         });
+
+
 
         function buttonLogOut() {
             firebase.auth().signOut();
@@ -59,6 +101,38 @@
             margin-bottom: 12px;
             width: 95%;
             padding: .4em;
+        }
+
+        body {
+            background-color: #0e1b21;
+        }
+
+        .btn-primary {
+            background-color: #519ccc !important;
+            border-color: #519ccc !important;
+        }
+
+        .btn-primary:hover {
+            background-color: #4080a8 !important;
+            border-color: #4080a8 !important;
+        }
+
+        .btn-info {
+            background-color: #4f7a8e !important;
+            border-color: #4f7a8e !important;
+            top: -20px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: -25px;
+        }
+
+        .btn-info:hover {
+            background-color: #396275 !important;
+            border-color: #396275 !important;
+            top: -20px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: -25px;
         }
 
         fieldset {
@@ -94,14 +168,16 @@
             padding: .3em;
         }
 
+        .ui-dialog.ui-corner-all.ui-widget.ui-widget-content.ui-front.ui-dialog-buttons.ui-draggable.ui-resizable {
+            z-index: 10000;
+        }
+
         .validateTips {
             border: 1px solid transparent;
             padding: 0.3em;
         }
     </style>
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="openbabel.js"></script>
+
     <script>
         $(function () {
             var dialog, form,
@@ -139,7 +215,7 @@
                 }
             }
 
-            function uploadMol() {                
+            function uploadMol() {
                 var valid = true;
                 allFields.removeClass("ui-state-error");
                 valid = valid && checkLength(name, "Molecule name", 3, 16);
@@ -147,7 +223,7 @@
                     "Molecule name may consist of a-z, 0-9, underscores, spaces and must begin with a letter."
                 );
 
-                if (valid) {                    
+                if (valid) {
                     Jmol.script(jmol, 'a = write("v3000")')
                     var data = Jmol.evaluateVar(jmol, "a");
                     firebase.database().ref('users/' + userid + '/atoms/').push({
@@ -192,46 +268,9 @@
         });
     </script>
 
+
+
     
-
-    <script type="text/javascript">
-        var jmol = "jmol";
-        var jme = "jme";
-
-        var JmolInfo = {
-            width: 350,
-            height: 300,
-            debug: false,
-            color: "black",
-            use: "HTML5",
-            addSelectionOptions: true,
-            j2sPath: "jsmol/j2s",
-            isSigned: true,
-            //defaultModel: ":morphine",
-            console: "none",
-            script: ""
-        }
-
-        var JMEInfo = {
-            use: "HTML5",
-            visible: true
-                //,divId: "jmediv"
-                //,jarPath: "jme",
-                //,jarFile: "JME.jar"
-                //optional parameters
-                // turns out the JSME has "nocanonize" as default, not "canonize"
-                ,
-            "options": "nocanonize" //"query,hydrogens"
-            //,"jme" : startingStructure   
-        } 
-
-        
-
-        function codeAddress() {
-            Jmol.show2d(jmol, true);
-        }
-        window.onload = codeAddress;
-    </script>
 </head>
 
 
@@ -244,53 +283,92 @@
             Your web browser must have JavaScript enabled in order for this application to display correctly.</div>
     </noscript>
 
-    <div id="dialog-form" title="Create new user">
-        <form>
-            <fieldset>
-                <label for="name">Molecule Name</label>
-                <input type="text" name="name" id="name" value="Molecule Name" class="text ui-widget-content ui-corner-all">
-                <!-- Allow form submission with keyboard without duplicating the dialog button -->
-                <input type="submit" tabindex="-1" style="position:absolute; top:-250px">
-            </fieldset>
-        </form>
-    </div>
 
-    <table cellpadding=10>
-        <tr>            
-            <td>
-                <a href="javascript:Jmol.show2d(jmol, true)">2D</a>
-                <a href="javascript:Jmol.show2d(jmol, false)">3D</a>
-                <br>
+
+    <div class="container" style="margin:50px; width:95%">
+        <div class="page-header" style="color:white">
+            LOGIACHEM
+            <table align="right">
+                <tr>
+                    <td>
+                        <button id="uploadMol" type="button" class="btn btn-info">Export to VR server</button>
+                    </td>
+                    <td>
+                        <button type="button" onclick='buttonLogOut();' class="btn btn-info">Log out</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="row">
+            <div id ="jsmediv" class="col-sm-9"></div>
+            <div class="col-sm-3"></div>
+        </div>
+        <script type="text/javascript">
+            var jmol = "jmol";
+            var jme = "jme";
+    
+            var JmolInfo = {
+                width: 0.9*document.getElementById("jsmediv").offsetWidth,
+                height: 0.7*Math.min(document.documentElement.clientHeight, window.innerHeight),
+                debug: false,
+                color: "black",
+                use: "HTML5",
+                j2sPath: "jsmol/j2s",
+                isSigned: true,
+                //defaultModel: ":morphine",
+                console: "none",
+                script: ""
+            }
+    
+            var JMEInfo = {
+                use: "HTML5",
+                visible: true
+                    //,divId: "jmediv"
+                    //,jarPath: "jme",
+                    //,jarFile: "JME.jar"
+                    //optional parameters
+                    // turns out the JSME has "nocanonize" as default, not "canonize"
+                    ,
+                "options": "query,hydrogens"
+                //,"jme" : startingStructure   
+            }
+    
+    
+    
+            function codeAddress() {
+                Jmol.show2d(jmol, true);
+            }
+            window.onload = codeAddress;
+        </script>
+        <div class="row">
+            <div class="col-sm-9">
+                <div id="moreButtons" style="margin-bottom:10px;">
+                    <a href="javascript:Jmol.show2d(jmol, true)" type="button" class="btn btn-primary">2D</a>
+                    <a href="javascript:Jmol.show2d(jmol, false)" type="button" class="btn btn-primary">3D</a>
+                </div>
                 <script>
                     jmol = Jmol.getApplet(jmol, JmolInfo)
                     jme = Jmol.getJMEApplet(jme, JMEInfo, jmol);
                 </script>
-            </td>
-        </tr>
-    </table>
+            </div>
+            <div id="moleculeList" class="col-sm-3">
+                <div id="dialog-form" style: "z-index:10000;" title="Upload a molecule">
+                    <form>
+                        <fieldset>
+                            <label for="name">Molecule Name</label>
+                            <input type="text" name="name" id="name" value="Molecule Name" class="text ui-widget-content ui-corner-all">
+                            <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                            <input type="submit" tabindex="-1" style="position:absolute; top:-250px">
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    <table align="center">
-        <tr>
-            <td colspan="3" style="font-weight: bold;">Export chemical structure from applet:</td>
-        </tr>
-        <tr>
-            <td>
-                <button type="button" onclick='getMolfile();'>Get molfile</button>
-            </td>
-            <td>
-                <button id="uploadMol" type="button">Export to VR server</button>
-            </td>
-            <td>
-                <button type="button" onclick='buttonLogOut();'>Log out</button>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="3">
-                <TEXTAREA id="jme_output" ROWS="20" COLS="80"></TEXTAREA>
-            </td>
-        </tr>
 
-    </table>
+    </div>
+
+
     <p></p>
 
 

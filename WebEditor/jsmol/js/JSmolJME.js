@@ -126,8 +126,8 @@
 
 		Info || (Info = {});
 		var DefaultInfo = {
-			width: 300,
-			height: 300,
+			width: 0.9*document.getElementById("jsmediv").offsetWidth,
+            height: 0.7*Math.min(document.documentElement.clientHeight, window.innerHeight),
 			jarPath: "jme",
 			jarFile: "JME.jar",
 			use: "HTML5",

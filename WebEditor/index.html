@@ -12,9 +12,16 @@
 
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-auth.js"></script>
-    <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.2.0/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.2.0/firebaseui.css" />
     <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-database.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous"></link>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+
     <script>
         // Initialize Firebase
         var config = {
@@ -36,17 +43,63 @@
             ],
             // Other config options...
         });
-    </script>    
+    </script>
+
+    <style>
+        body {
+            background-color: #0e1b21;
+        }
+
+        .btn-info {
+            background-color: #4f7a8e !important;
+            border-color: #4f7a8e !important;
+            top: -20px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: -25px;
+        }
+
+        .btn-info:hover {
+            background-color: #396275 !important;
+            border-color: #396275 !important;
+            top: -20px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: -25px;
+        }
+
+    </style>
+
 </head>
 
 <body>
+
+    <script>
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                window.location = 'editor.html';
+            } else {}
+        });
+    </script>
     <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
     <noscript>
         <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
             Your web browser must have JavaScript enabled in order for this application to display correctly.</div>
     </noscript>
 
-    <div id="firebaseui-auth-container"></div>
+    <div class="container" style="margin:50px; width:95%">
+        <div class="page-header" style="color:white">
+            LOGIACHEM
+            <table align="right">
+                    <tr>
+                        <td>
+                            <a id="dl" href="LogiaChem_v1.1.apk" type="button" class="btn btn-info" download>Download the APK</a>
+                        </td>                        
+                    </tr>
+                </table>
+        </div>
+        <div id="firebaseui-auth-container" style="margin-bottom:200px"></div>        
+    </div>
 
 
 </body>
