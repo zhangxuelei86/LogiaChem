@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "869906023203",
+    "firebase_url": "https://logiachem.firebaseio.com",
+    "project_id": "logiachem",
+    "storage_bucket": "logiachem.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869906023203:android:c0163d0a7c229445",
+        "android_client_info": {
+          "package_name": "com.Altheria.LogiaChem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "869906023203-rnns47utvjdq6l50odtf4gcgs8jsv5cn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFTZbTMoBryvk_5s7mf86f5IzhLaGQitc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

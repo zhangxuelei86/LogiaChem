@@ -1,0 +1,300 @@
+<!doctype html>
+<!-- The DOCTYPE declaration above will set the     -->
+<!-- browser's rendering engine into                -->
+<!-- "Standards Mode". Replacing this declaration   -->
+<!-- with a "Quirks Mode" doctype is not supported. -->
+
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Logia Chemistry Editor</title>
+
+    <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-auth.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+    <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-database.js"></script>
+    <script type="text/javascript" language="javascript" src="jsme/jsme.nocache.js"></script>
+    <script type="text/javascript" src="jsmol/JSmol.min.js"></script>
+    <script type="text/javascript" src="jsmol/js/JSmolJME.js"></script>
+
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyC37emfHDYGOOpDgfW5NRmugP0TpfO4m1s",
+            authDomain: "logiachem.firebaseapp.com",
+            databaseURL: "https://logiachem.firebaseio.com",
+            projectId: "logiachem",
+            storageBucket: "",
+            messagingSenderId: "869906023203"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <script>
+        var userid;
+        var db = firebase.database();
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                userid = user.uid
+            } else {
+                window.location = 'index.html'; //If User is not logged in, redirect to login page
+            }
+        });
+
+        function buttonLogOut() {
+            firebase.auth().signOut();
+        }
+    </script>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/resources/demos/style.css">
+    <style>
+        label,
+        input {
+            display: block;
+        }
+
+        input.text {
+            margin-bottom: 12px;
+            width: 95%;
+            padding: .4em;
+        }
+
+        fieldset {
+            padding: 0;
+            border: 0;
+            margin-top: 25px;
+        }
+
+        h1 {
+            font-size: 1.2em;
+            margin: .6em 0;
+        }
+
+        div#users-contain {
+            width: 350px;
+            margin: 20px 0;
+        }
+
+        div#users-contain table {
+            margin: 1em 0;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        div#users-contain table td,
+        div#users-contain table th {
+            border: 1px solid #eee;
+            padding: .6em 10px;
+            text-align: left;
+        }
+
+        .ui-dialog .ui-state-error {
+            padding: .3em;
+        }
+
+        .validateTips {
+            border: 1px solid transparent;
+            padding: 0.3em;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="openbabel.js"></script>
+    <script>
+        $(function () {
+            var dialog, form,
+                name = $("#name"),
+                allFields = $([]).add(name),
+                tips = $(".validateTips");
+
+            function updateTips(t) {
+                tips
+                    .text(t)
+                    .addClass("ui-state-highlight");
+                setTimeout(function () {
+                    tips.removeClass("ui-state-highlight", 1500);
+                }, 500);
+            }
+
+            function checkLength(o, n, min, max) {
+                if (o.val().length > max || o.val().length < min) {
+                    o.addClass("ui-state-error");
+                    updateTips("Length of " + n + " must be between " +
+                        min + " and " + max + ".");
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            function checkRegexp(o, regexp, n) {
+                if (!(regexp.test(o.val()))) {
+                    o.addClass("ui-state-error");
+                    updateTips(n);
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            function uploadMol() {                
+                var valid = true;
+                allFields.removeClass("ui-state-error");
+                valid = valid && checkLength(name, "Molecule name", 3, 16);
+                valid = valid && checkRegexp(name, /^[a-z]([0-9a-z_\s])+$/i,
+                    "Molecule name may consist of a-z, 0-9, underscores, spaces and must begin with a letter."
+                );
+
+                if (valid) {                    
+                    Jmol.script(jmol, 'a = write("v3000")')
+                    var data = Jmol.evaluateVar(jmol, "a");
+                    firebase.database().ref('users/' + userid + '/atoms/').push({
+                        name: name.val(),
+                        molFile: data,
+                    });
+                    console.log(data);
+                    console.log("ok");
+                    Jmol.show2d(jmol, true);
+                    dialog.dialog("close");
+                }
+                return valid;
+            }
+
+
+            dialog = $("#dialog-form").dialog({
+                autoOpen: false,
+                height: 400,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Upload Molecule": uploadMol,
+                    Cancel: function () {
+                        dialog.dialog("close");
+                    }
+                },
+                close: function () {
+                    form[0].reset();
+                    allFields.removeClass("ui-state-error");
+                }
+            });
+
+            form = dialog.find("form").on("submit", function (event) {
+                event.preventDefault();
+                uploadMol();
+            });
+
+            $("#uploadMol").button().on("click", function () {
+                Jmol.show2d(jmol, false);
+                dialog.dialog("open");
+            });
+        });
+    </script>
+
+    
+
+    <script type="text/javascript">
+        var jmol = "jmol";
+        var jme = "jme";
+
+        var JmolInfo = {
+            width: 350,
+            height: 300,
+            debug: false,
+            color: "black",
+            use: "HTML5",
+            addSelectionOptions: true,
+            j2sPath: "jsmol/j2s",
+            isSigned: true,
+            //defaultModel: ":morphine",
+            console: "none",
+            script: ""
+        }
+
+        var JMEInfo = {
+            use: "HTML5",
+            visible: true
+                //,divId: "jmediv"
+                //,jarPath: "jme",
+                //,jarFile: "JME.jar"
+                //optional parameters
+                // turns out the JSME has "nocanonize" as default, not "canonize"
+                ,
+            "options": "nocanonize" //"query,hydrogens"
+            //,"jme" : startingStructure   
+        } 
+
+        
+
+        function codeAddress() {
+            Jmol.show2d(jmol, true);
+        }
+        window.onload = codeAddress;
+    </script>
+</head>
+
+
+<body>
+
+
+    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+    <noscript>
+        <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+            Your web browser must have JavaScript enabled in order for this application to display correctly.</div>
+    </noscript>
+
+    <div id="dialog-form" title="Create new user">
+        <form>
+            <fieldset>
+                <label for="name">Molecule Name</label>
+                <input type="text" name="name" id="name" value="Molecule Name" class="text ui-widget-content ui-corner-all">
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <input type="submit" tabindex="-1" style="position:absolute; top:-250px">
+            </fieldset>
+        </form>
+    </div>
+
+    <table cellpadding=10>
+        <tr>            
+            <td>
+                <a href="javascript:Jmol.show2d(jmol, true)">2D</a>
+                <a href="javascript:Jmol.show2d(jmol, false)">3D</a>
+                <br>
+                <script>
+                    jmol = Jmol.getApplet(jmol, JmolInfo)
+                    jme = Jmol.getJMEApplet(jme, JMEInfo, jmol);
+                </script>
+            </td>
+        </tr>
+    </table>
+
+    <table align="center">
+        <tr>
+            <td colspan="3" style="font-weight: bold;">Export chemical structure from applet:</td>
+        </tr>
+        <tr>
+            <td>
+                <button type="button" onclick='getMolfile();'>Get molfile</button>
+            </td>
+            <td>
+                <button id="uploadMol" type="button">Export to VR server</button>
+            </td>
+            <td>
+                <button type="button" onclick='buttonLogOut();'>Log out</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <TEXTAREA id="jme_output" ROWS="20" COLS="80"></TEXTAREA>
+            </td>
+        </tr>
+
+    </table>
+    <p></p>
+
+
+
+</body>
+
+</html>
